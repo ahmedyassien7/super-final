@@ -1,0 +1,443 @@
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f6f8;
+}
+
+.container {
+    padding: 40px;
+}
+
+.title {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.products {
+    display: flex;
+    gap: 25px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.card {
+    background: white;
+    width: 220px;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    transition: 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+}
+
+.card img {
+    width: 100%;
+    height: 180px;
+    object-fit: contain;
+    background-color: #f5f5f5;
+
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.price {
+    font-weight: bold;
+    color: #27ae60;
+    margin-bottom: 15px;
+}
+
+.buy-btn {
+    background: #2c3e50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.buy-btn:hover {
+    background: #34495e;
+}
+
+.cart-toggle {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.cart {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    width: 280px;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.qty-controls button {
+    padding: 3px 8px;
+    cursor: pointer;
+}
+
+.remove-btn {
+    background: transparent;
+    border: none;
+    color: red;
+    cursor: pointer;
+}
+
+.checkout-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.categories {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.category-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid #2c3e50;
+    background: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.category-btn:hover {
+    background: #2c3e50;
+    color: white;
+}
+
+.category-btn.active {
+    background: #2c3e50;
+    color: white;
+}
+
+/* NAVBAR */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #2c3e50;
+    padding: 15px 30px;
+    color: white;
+}
+
+.logo {
+    margin: 0;
+}
+
+.search-input {
+    width: 40%;
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: none;
+    outline: none;
+}
+
+/* BANNER */
+.banner {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: white;
+    text-align: center;
+    padding: 50px 20px;
+    margin-bottom: 40px;
+}
+
+.banner h1 {
+    margin: 0;
+    font-size: 36px;
+}
+
+.banner p {
+    margin-top: 10px;
+    font-size: 18px;
+}
+
+/* NAV LINKS */
+.nav-links {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.nav-links a:hover {
+    color: #2ecc71;
+}
+
+/* LOGIN FORM */
+.form-container {
+    width: 350px;
+    margin: 80px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.form-container h2 {
+    margin-bottom: 20px;
+}
+
+.form-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-container input {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    outline: none;
+}
+
+.form-container input:focus {
+    border-color: #27ae60;
+}
+
+.form-container button {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    background: #27ae60;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.form-container button:hover {
+    background: #219150;
+}
+
+/* ABOUT PAGE */
+.about-container {
+    max-width: 800px;
+    margin: 60px auto;
+    padding: 40px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    line-height: 1.7;
+}
+
+.about-container h1 {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.about-container p {
+    margin-bottom: 15px;
+    color: #555;
+}
+
+.logout-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.logout-btn:hover {
+    color: #e74c3c;
+}
+
+/* PAYMENT PAGE */
+
+.payment-container {
+    max-width: 500px;
+    margin: 60px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.payment-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.payment-summary {
+    background: #f4f6f8;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.payment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.payment-form input {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.payment-form input:focus {
+    border-color: #27ae60;
+    outline: none;
+}
+
+.payment-form button {
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    background: #27ae60;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.payment-form button:hover {
+    background: #219150;
+}
+
+/* SUCCESS SCREEN */
+
+.payment-success {
+    text-align: center;
+    margin-top: 100px;
+}
+
+.payment-success button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    background: #27ae60;
+    color: white;
+    cursor: pointer;
+}
+
+/* ── FORGOT / RESET PASSWORD ─────────────────────────────────────────────── */
+
+.forgot-icon,
+.success-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.forgot-desc {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.success-msg {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.error-msg {
+    color: #e74c3c;
+    font-size: 13px;
+    margin-bottom: 10px;
+    background: #fdecea;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 15px;
+    font-size: 13px;
+    color: #27ae60;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.back-link:hover {
+    color: #219150;
+}
+
+/* Password input with show/hide toggle */
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding-right: 40px;
+}
+
+.toggle-pass {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    user-select: none;
+}
+
+/* Forgot password link under password input */
+.forgot-link-wrapper {
+    text-align: right;
+    margin-top: -8px;
+}
+
+.forgot-link {
+    font-size: 12px;
+    color: #27ae60;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.forgot-link:hover {
+    color: #219150;
+    text-decoration: underline;
+}
