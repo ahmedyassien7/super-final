@@ -29,8 +29,8 @@ export default function Login() {
             });
 
             if (response.ok) {
-                const user = await response.json();
-                localStorage.setItem("user", JSON.stringify(user));
+                const data = await response.json();
+                localStorage.setItem("user", JSON.stringify(data));
                 navigate("/");
             } else {
                 const err = await response.json();

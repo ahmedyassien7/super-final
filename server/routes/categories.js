@@ -3,13 +3,14 @@
  */
 
 const express = require("express");
-const db = require("../database");
+const pool = require("../database");
 
 const router = express.Router();
 
+// GET /api/categories
 router.get("/", async (_req, res) => {
     try {
-        const rows = await db.asyncAll("SELECT id, name FROM categories ORDER BY name ASC");
+        const [rows] = await pool.query("SELECT id, name FROM categories ORDER BY name ASC");
         res.json(rows);
     } catch (err) {
         console.error(err);

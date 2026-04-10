@@ -3,6 +3,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 // ── Import route handlers ─────────────────────────────────────────────────────
 const authRoutes = require("./routes/auth");
@@ -19,8 +20,10 @@ app.use(
     cors({
         origin: [
             "http://localhost:3000",
+            "http://localhost:3003",
             "http://localhost:3005",
             "http://127.0.0.1:3000",
+            "http://127.0.0.1:3003",
             "http://127.0.0.1:3005",
         ],
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -29,6 +32,9 @@ app.use(
 );
 
 app.use(express.json());
+
+// ── Serve product images from the React public/images folder ──────────────────
+app.use("/images", express.static(path.join(__dirname, "..", "public", "images")));
 
 // ── Request logger (development) ──────────────────────────────────────────────
 app.use((req, _res, next) => {
@@ -68,6 +74,8 @@ app.listen(PORT, () => {
     console.log(`  GET  /api/categories`);
     console.log(`  POST /api/auth/login`);
     console.log(`  POST /api/auth/register`);
+    console.log(`  POST /api/auth/forgot-password`);
+    console.log(`  POST /api/auth/reset-password`);
     console.log(`  POST /api/orders`);
     console.log(`  GET  /api/orders?email=...`);
     console.log(`  GET  /api/orders/:id`);

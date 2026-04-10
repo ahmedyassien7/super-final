@@ -1,6 +1,11 @@
+/**
+ * seed.js
+ * Seeds the MySQL database with categories, products, and users.
+ */
 
+require("dotenv").config();
 const bcrypt = require("bcryptjs");
-const db = require("./database");
+const pool = require("./database");
 
 console.log("🌱  Seeding database...\n");
 
@@ -94,65 +99,77 @@ const products = [
     { name: "Mouse", price: 150, category: "Electronics", stock: 40, image: "/images/mouse.jpg" },
     { name: "Fan", price: 500, category: "Electronics", stock: 25, image: "/images/fan.jpg" },
     { name: "Mini Fridge", price: 4000, category: "Electronics", stock: 8, image: "/images/mini-fridge.jpg" },
-
-
-
 ];
 
 async function seed() {
-    // Insert categories
-    for (const cat of categories) {
-        await db.asyncRun("INSERT OR IGNORE INTO categories (name) VALUES (?)", [cat]);
-    }
-    console.log("✅  Categories seeded:", categories.join(", "));
+    // Wait for tables to be created before seeding
+    await pool.tablesReady;
 
-    // Insert products
-    for (const p of products) {
-        const cat = await db.asyncGet("SELECT id FROM categories WHERE name = ?", [p.category]);
-        await db.asyncRun(
-            "INSERT OR IGNORE INTO products (name, price, category_id, image, stock) VALUES (?, ?, ?, ?, ?)",
-            [p.name, p.price, cat.id, p.image, p.stock]
-        );
-    }
-    console.log(`✅  ${products.length} products seeded`);
+    const conn = await pool.getConnection();
 
-    // Insert admin user
-    const existing = await db.asyncGet("SELECT id FROM users WHERE email = ?", ["admin@test.com"]);
-    if (!existing) {
-        const hash = bcrypt.hashSync("123456", 10);
-        await db.asyncRun(
-            "INSERT INTO users (email, password, role) VALUES (?, ?, ?)",
-            ["admin@test.com", hash, "admin"]
-        );
-        console.log("✅  Admin user created: admin@test.com / 123456");
-    } else {
-        console.log("ℹ️   Admin user already exists – skipping");
-    }
-    // Insert customers
-    const customers = [
-        { email: "customer1@test.com", password: "pass12" },
-        { email: "customer2@test.com", password: "pass34" },
-        { email: "customer3@test.com", password: "pass56" },
-        { email: "customer4@test.com", password: "pass78" },
-    ];
-
-    for (const c of customers) {
-        const existing = await db.asyncGet("SELECT id FROM users WHERE email = ?", [c.email]);
-        if (!existing) {
-            const hash = bcrypt.hashSync(c.password, 10);
-            await db.asyncRun(
-                "INSERT INTO users (email, password, role) VALUES (?, ?, ?)",
-                [c.email, hash, "customer"]
-            );
-            console.log(`✅  Customer created: ${c.email} / ${c.password}`);
+    try {
+        // Insert categories
+        for (const cat of categories) {
+            await conn.query("INSERT IGNORE INTO categories (name) VALUES (?)", [cat]);
         }
-    }
+        console.log("✅  Categories seeded:", categories.join(", "));
 
-    console.log("\n🎉  Seeding complete!");
-    db.close();
+        // Get category map
+        const [catRows] = await conn.query("SELECT id, name FROM categories");
+        const catMap = {};
+        catRows.forEach((r) => (catMap[r.name] = r.id));
+
+        // Insert products
+        for (const p of products) {
+            const catId = catMap[p.category];
+            await conn.query(
+                "INSERT IGNORE INTO products (name, price, category_id, image, stock) VALUES (?, ?, ?, ?, ?)",
+                [p.name, p.price, catId, p.image, p.stock]
+            );
+        }
+        console.log(`✅  ${products.length} products seeded`);
+
+        // Insert admin user
+        const [existingAdmin] = await conn.query("SELECT id FROM users WHERE email = ?", ["admin@test.com"]);
+        if (existingAdmin.length === 0) {
+            const hash = bcrypt.hashSync("123456", 10);
+            await conn.query(
+                "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+                ["Admin", "admin@test.com", hash, "admin"]
+            );
+            console.log("✅  Admin user created: admin@test.com / 123456");
+        } else {
+            console.log("ℹ️   Admin user already exists – skipping");
+        }
+
+        // Insert customers
+        const customers = [
+            { name: "Customer One", email: "customer1@test.com", password: "pass12" },
+            { name: "Customer Two", email: "customer2@test.com", password: "pass34" },
+            { name: "Customer Three", email: "customer3@test.com", password: "pass56" },
+            { name: "Customer Four", email: "customer4@test.com", password: "pass78" },
+        ];
+
+        for (const c of customers) {
+            const [existing] = await conn.query("SELECT id FROM users WHERE email = ?", [c.email]);
+            if (existing.length === 0) {
+                const hash = bcrypt.hashSync(c.password, 10);
+                await conn.query(
+                    "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+                    [c.name, c.email, hash, "customer"]
+                );
+                console.log(`✅  Customer created: ${c.email} / ${c.password}`);
+            }
+        }
+
+        console.log("\n🎉  Seeding complete!");
+    } finally {
+        conn.release();
+        await pool.end();
+    }
 }
 
-seed().catch(err => {
+seed().catch((err) => {
     console.error("Seed failed:", err);
     process.exit(1);
 });
