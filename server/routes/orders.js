@@ -1,9 +1,10 @@
 /**
  * routes/orders.js
+ * Uses MySQL transactions for atomic order creation.
  */
 
 const express = require("express");
-const db = require("../database");
+const pool = require("../database");
 
 const router = express.Router();
 
@@ -15,33 +16,46 @@ router.post("/", async (req, res) => {
     if (!Array.isArray(items) || items.length === 0)
         return res.status(400).json({ error: "items must be a non-empty array" });
 
+    const conn = await pool.getConnection();
     try {
-        const user = await db.asyncGet("SELECT id FROM users WHERE id = ?", [user_id]);
-        if (!user) return res.status(404).json({ error: "User not found" });
+        await conn.beginTransaction();
+
+        // Verify user exists
+        const [userRows] = await conn.query("SELECT id FROM users WHERE id = ?", [user_id]);
+        if (userRows.length === 0) {
+            await conn.rollback();
+            return res.status(404).json({ error: "User not found" });
+        }
 
         // Insert order
-        const orderResult = await db.asyncRun(
+        const [orderResult] = await conn.query(
             "INSERT INTO orders (user_id, total, status) VALUES (?, ?, 'pending')",
             [user_id, total]
         );
-        const order_id = orderResult.lastID;
+        const order_id = orderResult.insertId;
 
-        // Insert items
+        // Insert order items
         for (const item of items) {
-            await db.asyncRun(
+            await conn.query(
                 "INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES (?, ?, ?, ?)",
                 [order_id, item.product_id, item.quantity, item.unit_price]
             );
         }
 
-        const order = await db.asyncGet(
+        await conn.commit();
+
+        // Fetch the created order
+        const [orderRows] = await conn.query(
             "SELECT id, user_id, total, status, created_at FROM orders WHERE id = ?",
             [order_id]
         );
-        res.status(201).json(order);
+        res.status(201).json(orderRows[0]);
     } catch (err) {
+        await conn.rollback();
         console.error("Order creation failed:", err.message);
         res.status(500).json({ error: "Failed to create order" });
+    } finally {
+        conn.release();
     }
 });
 
@@ -51,24 +65,29 @@ router.get("/", async (req, res) => {
     if (!email) return res.status(400).json({ error: "email query param is required" });
 
     try {
-        const user = await db.asyncGet("SELECT id FROM users WHERE email = ?", [email]);
-        if (!user) return res.status(404).json({ error: "User not found" });
+        const [userRows] = await pool.query("SELECT id FROM users WHERE email = ?", [email]);
+        if (userRows.length === 0) return res.status(404).json({ error: "User not found" });
 
-        const orders = await db.asyncAll(
+        const userId = userRows[0].id;
+
+        const [orders] = await pool.query(
             "SELECT id, user_id, total, status, created_at FROM orders WHERE user_id = ? ORDER BY created_at DESC",
-            [user.id]
+            [userId]
         );
 
-        const ordersWithItems = await Promise.all(orders.map(async (order) => {
-            const items = await db.asyncAll(`
-                SELECT oi.id, oi.quantity, oi.unit_price,
-                       p.id AS product_id, p.name AS product_name, p.image
-                FROM order_items oi
-                JOIN products p ON p.id = oi.product_id
-                WHERE oi.order_id = ?
-            `, [order.id]);
-            return { ...order, items };
-        }));
+        const ordersWithItems = await Promise.all(
+            orders.map(async (order) => {
+                const [items] = await pool.query(
+                    `SELECT oi.id, oi.quantity, oi.unit_price,
+                            p.id AS product_id, p.name AS product_name, p.image
+                     FROM order_items oi
+                     JOIN products p ON p.id = oi.product_id
+                     WHERE oi.order_id = ?`,
+                    [order.id]
+                );
+                return { ...order, items };
+            })
+        );
 
         res.json(ordersWithItems);
     } catch (err) {
@@ -83,21 +102,22 @@ router.get("/:id", async (req, res) => {
     if (isNaN(id)) return res.status(400).json({ error: "Invalid order id" });
 
     try {
-        const order = await db.asyncGet(
+        const [orderRows] = await pool.query(
             "SELECT id, user_id, total, status, created_at FROM orders WHERE id = ?",
             [id]
         );
-        if (!order) return res.status(404).json({ error: "Order not found" });
+        if (orderRows.length === 0) return res.status(404).json({ error: "Order not found" });
 
-        const items = await db.asyncAll(`
-            SELECT oi.id, oi.quantity, oi.unit_price,
-                   p.id AS product_id, p.name AS product_name, p.image
-            FROM order_items oi
-            JOIN products p ON p.id = oi.product_id
-            WHERE oi.order_id = ?
-        `, [id]);
+        const [items] = await pool.query(
+            `SELECT oi.id, oi.quantity, oi.unit_price,
+                    p.id AS product_id, p.name AS product_name, p.image
+             FROM order_items oi
+             JOIN products p ON p.id = oi.product_id
+             WHERE oi.order_id = ?`,
+            [id]
+        );
 
-        res.json({ ...order, items });
+        res.json({ ...orderRows[0], items });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Server error" });

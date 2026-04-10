@@ -116,15 +116,20 @@ export default function Home() {
                     <Link to="/about">About</Link>
 
                     {user ? (
-                        <button
-                            className="logout-btn"
-                            onClick={() => {
-                                localStorage.removeItem("user");
-                                window.location.reload();
-                            }}
-                        >
-                            Logout
-                        </button>
+                        <>
+                            <span style={{ color: "#2ecc71", fontWeight: 500 }}>
+                                👋 {user.name || user.email}
+                            </span>
+                            <button
+                                className="logout-btn"
+                                onClick={() => {
+                                    localStorage.removeItem("user");
+                                    window.location.reload();
+                                }}
+                            >
+                                Logout
+                            </button>
+                        </>
                     ) : (
                         <Link to="/login">Login</Link>
                     )}
